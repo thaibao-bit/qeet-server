@@ -44,36 +44,36 @@ const userSchema = mongoose.Schema({
         type: Date,
         required: false
     },
-    qeets: {
-        type: mongoose.Schema.Types.ObjectId,
+    qeets: [{
+        type: String,
         required: false,
         ref: "Qeet"
-    },
-    liked: {
-        type: mongoose.Schema.Types.ObjectId,
+    }],
+    liked: [{
+        type: String,
         required: false,
         ref: "Qeet"
-    },
-    shared: {
-        type: mongoose.Schema.Types.ObjectId,
+    }],
+    shared: [{
+        type: String,
         required: false,
         ref: "Qeet"
-    },
-    reQeeted: {
-        type: mongoose.Schema.Types.ObjectId,
+    }],
+    reQeeted: [{
+        type: String,
         required: false,
         ref: "Qeet"
-    },
-    following: {
-        type: mongoose.Schema.Types.ObjectId,
+    }],
+    following: [{
+        type: String,
         required: false,
         ref: "User"
-    },
-    followers: {
-        type: mongoose.Schema.Types.ObjectId,
+    }],
+    followers:[{
+        type: String,
         required: false,
         ref: "User"
-    }
+    }],
 
 })
 

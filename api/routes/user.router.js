@@ -3,34 +3,7 @@ const bcrypt = require('bcrypt')
 const JWT = require("jsonwebtoken")
 const checkAuth = require('../middleware/check-auth')
 const userModel = require('../models/user')
-const multer = require('multer')
-
-
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype === "image/jpg" || file.mimetype === "image/png" || file.mimetype === "image/jpeg") 
-    {
-        cb(null, true)
-    }
-    else {
-        cb(null, false)
-    }
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null,'./uploads/')
-    },
-    filename: (req,file,cb) => {
-        cb(null, req.userData.id  + '-' + Date.now() + '.' + file.originalname.split('.').pop())
-    }
-})
-const upload = multer({
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: {
-        fileSize: 1024 *1024 *5
-    }
-})
+const upload = require('../middleware/upload-picture')
 
 router.post('/register', (request, response, next) => { 
         const userName = request.body.userName
@@ -134,7 +107,7 @@ router.post('/login', (request, response, next) => {
                 })
             }
             if (same){
-                JWT.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "1h"}, (error, encoded) => {
+                JWT.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "12h"}, (error, encoded) => {
                     if(error){
                         return response.status(500).json({
                             message: "Something went wrong, please try again",
@@ -179,6 +152,28 @@ router.patch('/update', checkAuth, upload.fields([{name: 'profilePic', maxCount:
                 })
         }
     })
+})
+
+router.post('/follow-toggle/:id', checkAuth, async (request, response, next) => {
+    const followedUser = await userModel.findById({_id: request.params.id})
+    const user = await userModel.findById({_id:request.userData.id})
+    const followed = await user.following.filter((id) => {return id == followedUser._id})
+    if(followed == "") {
+        user.following.push(followedUser._id)
+        // followedUser.followers.push(user._id)
+        // await followedUser.save()
+        await user.save()
+        return response.status(200).json(user)
+    }
+    user.following = await user.following.filter((id)=> {return id != followedUser._id})
+    // followedUser.followers = await followedUser.followers.filter((id)=> {return id != user._id})
+    // await followedUser.save()
+    await user.save()
+    return response.status(200).json({
+        message: "Unfollowed",
+        user
+    })
+    
 })
 
 module.exports = router
